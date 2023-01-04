@@ -1,4 +1,2 @@
---Todos os comandos deste arquivo serão rodados assim que a aplicação for iniciada
-
-INSERT INTO curso (id, nome, categoria) VALUES (1, 'Kotlin', "Programação");
-INSERT INTO usuario (id, nome, email) VALUES (1, "Rafael", "rafael@email.com");
+insert into curso(id, nome, categoria) values(1, 'Kotlin', 'PROGRAMACAO');
+insert into usuario(id, nome, email) values(1, 'Ana da Silva', 'ana@email.com');
