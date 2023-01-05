@@ -27,10 +27,8 @@ class TopicoService(
     }
 
     fun buscarPorId(id: Long): TopicoView {
-        //nesse caso está sendo usado o find ao invés de get, pois o find retorna um optional, assim ainda é possível utilizar o orElseThrow.
-        val topico = repository.findById(id).stream().filter { t ->
-            t.id == id
-        }.findFirst().orElseThrow{NotFoundException(notFoundMessage)}
+        val topico = repository.findById(id)
+                .orElseThrow{NotFoundException(notFoundMessage)}
         return topicoViewMapper.map(topico)
     }
 
@@ -41,7 +39,8 @@ class TopicoService(
     }
 
     fun atualizar(form: AtualizacaoTopicoForm): TopicoView {
-        var topico = repository.findById(form.id).orElseThrow{NotFoundException(notFoundMessage)}
+        val topico = repository.findById(form.id)
+                .orElseThrow{NotFoundException(notFoundMessage)}
         topico.titulo = form.titulo
         topico.mensagem = form.mensagem
         return topicoViewMapper.map(topico)
