@@ -2,8 +2,11 @@ package br.com.alura.forum.controller
 
 import br.com.alura.forum.dto.AtualizacaoTopicoForm
 import br.com.alura.forum.dto.NovoTopicoForm
+import br.com.alura.forum.dto.TopicoPorCategoriaDto
 import br.com.alura.forum.dto.TopicoView
 import br.com.alura.forum.service.TopicoService
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -19,7 +22,7 @@ import javax.validation.constraints.NotNull
 @RequestMapping("/topicos")
 class TopicoController(private val service: TopicoService) {
 
-    @GetMapping
+
     //Adicionando o parametro @RequestParam nos parametros da funcao, podemos adicionar ou nao o nome do curso na uri
     //Por meio de um pageable, podemos receber quantos itens deverao ser carregados em uma pagina, ao inves de simplesmente retornar todos
     //pois em um banco muito extenso, o tempo de resposta sera cada vez maior
@@ -39,6 +42,9 @@ class TopicoController(private val service: TopicoService) {
     mas caso n tenham parametros na uri, podemos usar o @pageabledefault tambem
 
      */
+    @GetMapping
+    @Cacheable("todos os topicos")
+    //a string do cacheable dá um id, um apelido ao cache relacionado a essa func
     fun listar(@RequestParam(required = false,) nomeCurso: String?,
                @PageableDefault(size = 5) paginacao: Pageable): Page<TopicoView> {
         return service.listar(nomeCurso, paginacao)
@@ -51,6 +57,11 @@ class TopicoController(private val service: TopicoService) {
 
     @PostMapping
     @Transactional
+    @CacheEvict(value = ["topicos"], allEntries = true)
+    /*o CacheEvict está sendo usado para assim que criarmos um novo tópico,
+    * limpar o cache topicos, o mesmo é um array para que possamos limpar vários arrays de uma só vez
+    * Por meio do all entries todos os dados do cache serão deletados.
+    * */
     fun cadastrar(
             @RequestBody @Valid form: NovoTopicoForm,
             uriBuilder: UriComponentsBuilder
@@ -62,6 +73,7 @@ class TopicoController(private val service: TopicoService) {
 
     @PutMapping
     @Transactional
+    @CacheEvict(value = ["topicos"], allEntries = true)
     fun atualizar(@RequestBody @Valid form: AtualizacaoTopicoForm): ResponseEntity<TopicoView> {
         val topicoView = service.atualizar(form)
         return ResponseEntity.ok(topicoView)
@@ -70,8 +82,14 @@ class TopicoController(private val service: TopicoService) {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Transactional
+    @CacheEvict(value = ["topicos"], allEntries = true)
     fun deletar(@PathVariable id: Long) {
         service.deletar(id)
+    }
+
+    @GetMapping("/relatorio")
+    fun relatorio() : List<TopicoPorCategoriaDto> {
+        return service.relatorio()
     }
 
 }
